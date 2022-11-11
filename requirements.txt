@@ -1,0 +1,4 @@
+colorthief
+tqdm
+numpy
+Pillow
