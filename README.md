@@ -36,3 +36,6 @@ data/info/<album>.json
 ![](examples/Sometimes%20I%20Might%20Be%20Introvert.png)
 ![](examples/Use%20Your%20Illusion%20I.png)
 ![](examples/Zion.png)
+
+## Sample data
+https://drive.google.com/file/d/1Eu7-gL5muRrGUstlC92RK13A6Vkwrw-R/view?usp=sharing
