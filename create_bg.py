@@ -14,7 +14,7 @@ def generate_bg(album: str):
     album_dict = json.load(open(album_info))
     # print(album_dict)
 
-    font = ImageFont.truetype('System/Library/Fonts/AmericanTypewriter.ttc',
+    font = ImageFont.truetype('fonts/AmericanTypewriter.ttc',
                               size=30,
                               index=0)
 
