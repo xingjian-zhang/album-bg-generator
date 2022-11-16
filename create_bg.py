@@ -6,62 +6,74 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from tqdm import tqdm
 import numpy as np
 
+ENGLISH_FONT = 'fonts/AmericanTypewriter.ttc'
+ENGLISH_FONT_SIZE = 30
+BACKGROUND_PATH = 'black_bg.jpg'
+CANVAS_LENTH = 1000
+BAND_LENTH = 175
+ALBUM_LENGTH = 600
+SIGMA = 40
+SPACING = 20
+TEXT_XY = (500, 1000)
 
-def generate_bg(album: str):
-    album_name = f"data/image/{album}.png"
-    album_info = f"data/info/{album}.json"
 
-    album_dict = json.load(open(album_info))
-    # print(album_dict)
+def generate_bg(album_name: str, background_path: str = BACKGROUND_PATH):
+    # set album fig and info path
+    fig_path = f"data/image/{album_name}.png"
+    info_path = f"data/info/{album_name}.json"
 
-    font = ImageFont.truetype('fonts/AmericanTypewriter.ttc',
-                              size=30,
-                              index=0)
+    # load album information
+    with open(info_path) as _:
+        info = json.load(_)
+    text = f"{info['album']}\n{info['album artist']}\n{info['date']}\n{info['genre']}"
 
-    information = [
-        album_dict["album"], album_dict["album artist"],
-        str(album_dict["date"]), album_dict["genre"]
-    ]
-    information = [" ".join(_) for _ in information]
-    texts = "\n".join(information)
-
-    black_bg = Image.open("black_bg.jpg")
-    color_thief = ColorThief(album_name)
-    im = Image.open(album_name)
-    color = np.array(color_thief.get_color(quality=1))
-    white = np.array((255, 255, 255))
-    mid = (color + white) / 2
+    # cpture major colors
+    ct = ColorThief(fig_path)
+    color = np.array(ct.get_color(1))
+    white = np.array([255, 255, 255])
+    text_color = (color + white) // 2
 
     color = tuple(color)
-    mid = tuple(np.array(mid, dtype=int))
+    text_color = tuple(text_color)
 
-    canvas_length = 1000
-    band_length = 175
+    # load fonts
+    en_font = ImageFont.truetype(ENGLISH_FONT, size=ENGLISH_FONT_SIZE, index=0)
 
-    x, y = black_bg.size
-    x = (x - canvas_length) // 2
-    y = (y - canvas_length) // 2 - 200
+    # load figure
+    fig = Image.open(fig_path)
+    bg = Image.open(background_path)
 
-    canvas_size = (canvas_length, canvas_length * 2)
-    rectangle_size = (band_length, band_length, canvas_length - band_length,
-                      canvas_length - band_length)
+    # set geometry
+    bg_x, bg_y = bg.size
+    canvas_x, canvas_y = (bg_x - CANVAS_LENTH) // 2, (bg_y - CANVAS_LENTH) // 2
+    rectangle = (BAND_LENTH, BAND_LENTH, CANVAS_LENTH - BAND_LENTH,
+                 CANVAS_LENTH - BAND_LENTH)
+    canvas_size = (CANVAS_LENTH, CANVAS_LENTH * 2)
+    fig_box = ((CANVAS_LENTH - ALBUM_LENGTH) // 2,
+               (CANVAS_LENTH - ALBUM_LENGTH) // 2)
+
+    # create canvas
     canvas = Image.new('RGBA', canvas_size)
+
+    # create glow
     draw = ImageDraw.Draw(canvas)
-    draw.rectangle(rectangle_size, fill=color)
-    filtered = canvas.filter(ImageFilter.GaussianBlur(40))
-    draw = ImageDraw.Draw(filtered)
-    draw.text(xy=(500, 1000),
-              text=texts,
-              fill=mid,
-              font=font,
+    draw.rectangle(rectangle, fill=color)
+    glowed = canvas.filter(ImageFilter.GaussianBlur(SIGMA))
+    draw = ImageDraw.Draw(glowed)
+
+    # add texts
+    draw.text(xy=TEXT_XY,
+              text=text,
+              fill=text_color,
+              font=en_font,
               anchor='mm',
               align='center',
-              spacing=20)
+              spacing=SPACING)
 
-    im_box = ((canvas_length - 600) // 2, (canvas_length - 600) // 2)
-    filtered.paste(im, box=im_box)
-    black_bg.paste(filtered, mask=filtered, box=(x, y))
-    black_bg.save(f"build/{album}.png")
+    # combine layers
+    glowed.paste(fig, box=fig_box)
+    bg.paste(glowed, box=(canvas_x, canvas_y), mask=glowed)
+    bg.save(f"build/{album_name}.png")
 
 
 def main():
