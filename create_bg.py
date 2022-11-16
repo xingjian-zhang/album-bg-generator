@@ -18,6 +18,19 @@ TEXT_XY = (500, 1000)
 
 
 def generate_bg(album_name: str, background_path: str = BACKGROUND_PATH):
+    """Generate a desktop background given albums.
+
+    Parameters
+    ----------
+    album_name : str
+        Name of the album.
+    background_path : str, optional
+        Path of the background image, by default BACKGROUND_PATH
+        
+    Note
+    ----
+    The background_path should be 4k.
+    """
     # set album fig and info path
     fig_path = f"data/image/{album_name}.png"
     info_path = f"data/info/{album_name}.json"
