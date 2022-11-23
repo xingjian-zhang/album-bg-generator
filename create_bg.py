@@ -5,6 +5,7 @@ from colorthief import ColorThief
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from tqdm import tqdm
 import numpy as np
+from pathlib import Path
 
 ENGLISH_FONT = 'fonts/AmericanTypewriter.ttc'
 ENGLISH_FONT_SIZE = 30
@@ -90,10 +91,11 @@ def generate_bg(album_name: str, background_path: str = BACKGROUND_PATH):
 
 
 def main():
-    paths = os.listdir("data/image")
-    paths = [_[:-4] for _ in paths]
+    paths = [Path(path).stem for path in os.listdir("data/image")]
+    builts = [Path(path).stem for path in os.listdir("build")]
     for album in tqdm(paths):
-        generate_bg(album)
+        if album not in builts:
+            generate_bg(album)
 
 
 if __name__ == "__main__":
